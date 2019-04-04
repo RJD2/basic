@@ -7,20 +7,11 @@ from modules.mongo_helpers import get_mongo_db
 mongodb = MongoEngine()
 
 app = Flask(__name__)
-app.config['MONGODB_SETTINGS'] = {
-    'db': '<---YOUR_DB_NAME--->',
-    'host': 'mongodb://<---YOUR_DB_FULL URI--->'
-}
-app.config['OAUTH_CREDENTIALS'] = {
-    'facebook': {
-        'id': '470154729788964',
-        'secret': '010cc08bd4f51e34f3f3e684fbdea8a7'
-    },
-    'twitter': {
-        'id': '3RzWQclolxWZIMq5LJqzRZPTl',
-        'secret': 'm9TEd58DSEtRrZHpz2EjrV9AhsBRxKMo8m3kuIZj3zLwzwIimt'
-    }
-}
+# app.config['MONGODB_SETTINGS'] = {
+#     'db': '<---YOUR_DB_NAME--->',
+#     'host': 'mongodb://<---YOUR_DB_FULL URI--->'
+# }
+app.config['OAUTH_CREDENTIALS'] = config['OAUTH_CREDENTIALS']
 
 db = MongoEngine(app)
 app.config['SECRET_KEY'] = '<---YOUR_SECRET_FORM_KEY--->'
@@ -68,7 +59,7 @@ def oauth_callback(provider):
     if social_id is None:
         flash('Authentication failed.')
         return redirect(url_for('index'))
-    user = User.query.filter_by(social_id=social_id).first()
+    user = User.objects(email=form.email.data).first()
     if not user:
         user = User(social_id=social_id, nickname=username, email=email)
         db.session.add(user)
