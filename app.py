@@ -6,10 +6,11 @@ from modules.mongo_helpers import get_mongo_db
 
 mongodb = MongoEngine()
 
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'top secret!'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['MONGODB_SETTINGS'] = {
+    'db': '<---YOUR_DB_NAME--->',
+    'host': 'mongodb://<---YOUR_DB_FULL URI--->'
+}
 app.config['OAUTH_CREDENTIALS'] = {
     'facebook': {
         'id': '470154729788964',
@@ -21,24 +22,22 @@ app.config['OAUTH_CREDENTIALS'] = {
     }
 }
 
-mongodb.init_app(app)
-
-db = get_mongo_db('auth')
-lm = LoginManager(app)
-lm.login_view = 'index'
-
-
-class User(UserMixin):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    social_id = db.Column(db.String(64), nullable=False, unique=True)
-    nickname = db.Column(db.String(64), nullable=False)
-    email = db.Column(db.String(64), nullable=True)
+db = MongoEngine(app)
+app.config['SECRET_KEY'] = '<---YOUR_SECRET_FORM_KEY--->'
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
-@lm.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+class User(UserMixin, db.Document):
+    meta = {'collection': '<---YOUR_COLLECTION_NAME--->'}
+    email = db.StringField(max_length=30)
+    password = db.StringField()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.objects(pk=user_id).first()
 
 
 @app.route('/')
