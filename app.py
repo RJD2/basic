@@ -21,7 +21,7 @@ login_manager.login_view = 'login'
 
 
 class User(UserMixin, db.Document):
-    meta = {'collection': '<---YOUR_COLLECTION_NAME--->'}
+    meta = {'collection': 'user'}
     email = db.StringField(max_length=30)
     password = db.StringField()
 
